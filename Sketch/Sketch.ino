@@ -34,6 +34,8 @@ public:
     _lowPins = lowPins;
     _numLowPins = numLowPins;
     _analogInputPin = analogInputPin;
+
+    Serial.println(numLowPins);
   }
 
   void update() {
@@ -69,15 +71,16 @@ private:
   };
 
   bool isActive() {
-    // check high high pins
-    for (unsigned i = 0; i < _numHighPins; i++) {
+    unsigned i;
+    // check high pins
+    for (i = 0; i < _numHighPins; i++) {
       if (!digitalRead(_highPins[i])) {
         return false;
       }
     }
 
     // check low pins
-    for (unsigned i = 0; i < _numLowPins; i++) {
+    for (i = 0; i < _numLowPins; i++) {
       if (digitalRead(_lowPins[i])) {
         return false;
       }
@@ -122,19 +125,19 @@ void setup() {
 
   // servo 1
   unsigned servo1HighPins[] = { TASTE_1 }, servo1LowPins[] = { TASTE_2 };
-  CustomServo servo1(SERVO_1_PIN, DREHGEBER_1, servo1HighPins, sizeof(servo1HighPins) / sizeof(unsigned), servo1LowPins, sizeof(servo1LowPins));
+  CustomServo servo1(SERVO_1_PIN, DREHGEBER_1, servo1HighPins, sizeof(servo1HighPins) / sizeof(unsigned), servo1LowPins, sizeof(servo1LowPins) / sizeof(unsigned));
 
   // servo 2
   unsigned servo2HighPins[] = { TASTE_1 }, servo2LowPins[] = { TASTE_2 };
-  CustomServo servo2(SERVO_2_PIN, DREHGEBER_2, servo2HighPins, sizeof(servo2HighPins) / sizeof(unsigned), servo2LowPins, sizeof(servo2LowPins));
+  CustomServo servo2(SERVO_2_PIN, DREHGEBER_2, servo2HighPins, sizeof(servo2HighPins) / sizeof(unsigned), servo2LowPins, sizeof(servo2LowPins) / sizeof(unsigned));
 
   // servo 3
   unsigned servo3HighPins[] = { TASTE_1 }, servo3LowPins[] = { TASTE_2 };
-  CustomServo servo3(SERVO_3_PIN, DREHGEBER_3, servo3HighPins, sizeof(servo3HighPins) / sizeof(unsigned), servo3LowPins, sizeof(servo3LowPins));
+  CustomServo servo3(SERVO_3_PIN, DREHGEBER_3, servo3HighPins, sizeof(servo3HighPins) / sizeof(unsigned), servo3LowPins, sizeof(servo3LowPins) / sizeof(unsigned));
 
   // servo 4
   unsigned servo4HighPins[] = { TASTE_1, TASTE_2 }, servo4LowPins[] = {};
-  CustomServo servo4(SERVO_4_PIN, DREHGEBER_1, servo4HighPins, sizeof(servo4HighPins) / sizeof(unsigned), servo4LowPins, sizeof(servo4LowPins));
+  CustomServo servo4(SERVO_4_PIN, DREHGEBER_1, servo4HighPins, sizeof(servo4HighPins) / sizeof(unsigned), servo4LowPins, sizeof(servo4LowPins) / sizeof(unsigned));
 
   // servo 5
   unsigned servo5HighPins[] = { TASTE_1, TASTE_2 }, servo5LowPins[] = {};
@@ -150,7 +153,7 @@ void setup() {
     for (unsigned i = 0; i < NUM_SERVOS; i++) {
       servos[i].update();
     }
-
+    Serial.println(digitalRead(TASTE_1) && !digitalRead(TASTE_2));
     if (digitalRead(TASTE_4) && digitalRead(TASTE_7)) {
       softwareReset();
     }
