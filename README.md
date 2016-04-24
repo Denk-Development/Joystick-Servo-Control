@@ -9,6 +9,16 @@ Der [Funktionsrumpf](https://github.com/Simsso/Joystick-Servo-Control/blob/maste
 
 Es kann hier jede beliebige Funktion f(x) eingesetzt werden, mit der Einschränkung im Wertebereich (maximal von 0 bis 180). Eine lineare Ansteuerung würde beispielsweise so aussehen: `180/1024 * x`
 
+####Invertierung der Servo-Drehrichtung
+Um die Drehrichtung zu invertieren, muss der Servo mit `bool inverted = true` initialisiert werden.
+
+Beispiel:
+```C++
+// servo 1
+unsigned servo1HighPins[] = { TASTE_1 }, servo1LowPins[] = { TASTE_2 };
+CustomServo servo1(SERVO_1_PIN, DREHGEBER_1, servo1HighPins, sizeof(servo1HighPins) / sizeof(unsigned), servo1LowPins, sizeof(servo1LowPins) / sizeof(unsigned), true);
+```
+
 ###Hinzufügen eines Servos
 ####1. Anpassung der Servoanzahl
 Die [Codezeile](https://github.com/Simsso/Joystick-Servo-Control/blob/master/Sketch/Sketch.ino#L20) `#define NUM_SERVOS 6` auf die neue Zahl an Servos anpassen.
@@ -17,9 +27,9 @@ Die [Codezeile](https://github.com/Simsso/Joystick-Servo-Control/blob/master/Ske
 In der `void setup()` Funktion den Code 
 
 ```C++
-  // servo N
-  unsigned servoNHighPins[] = { TASTE_1, TASTE_2 }, servoNLowPins[] = {};
-  CustomServo servoN(SERVO_N_PIN, DREHGEBER_3, servoNHighPins, sizeof(servoNHighPins) / sizeof(unsigned), servoNLowPins, sizeof(servoNLowPins));
+// servo N
+unsigned servoNHighPins[] = { TASTE_1, TASTE_2 }, servoNLowPins[] = {};
+CustomServo servoN(SERVO_N_PIN, DREHGEBER_3, servoNHighPins, sizeof(servoNHighPins) / sizeof(unsigned), servoNLowPins, sizeof(servoNLowPins));
 ```
 
 [hinter den bereits erstellten Servos](https://github.com/Simsso/Joystick-Servo-Control/blob/master/Sketch/Sketch.ino#L141) einfügen und `N` durch die Nummer des Servos ersetzen. 
