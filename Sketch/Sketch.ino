@@ -33,8 +33,12 @@ public:
 
   void update() {
     addNewValue();
-    if (!_init && isActive()) {
+    if (!_init && isActive()) { // active
       Servo::write(CustomServo::transferFunction(getAverageOfLastValues()));
+    }
+    else { // not active 
+      // go back to zero position
+      Servo::write(90);
     }
   };
 
