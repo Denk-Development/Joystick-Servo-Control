@@ -69,7 +69,7 @@ private:
   static unsigned transferFunction(unsigned x, bool inverted) { 
     unsigned y = 6.6822581E-7 * x*x*x - .001026855 * x*x + .5263598 * x;
     if (inverted) {
-      y = -y;
+      y = 180 - y;
     }
     return y;
   };
