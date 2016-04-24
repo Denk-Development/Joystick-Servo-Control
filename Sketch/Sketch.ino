@@ -24,7 +24,7 @@
 class CustomServo : public Servo
 {
 public:
-  CustomServo(unsigned pin, unsigned analogInputPin, unsigned* highPins, unsigned numHighPins, unsigned* lowPins, unsigned numLowPins) : Servo() {
+  CustomServo(unsigned pin, unsigned analogInputPin, unsigned* highPins, unsigned numHighPins, unsigned* lowPins, unsigned numLowPins, bool inverted = false) : Servo() {
     Servo::attach(pin);
     pinMode(pin, OUTPUT);
     pinMode(analogInputPin, INPUT);
@@ -34,12 +34,13 @@ public:
     _lowPins = lowPins;
     _numLowPins = numLowPins;
     _analogInputPin = analogInputPin;
+    _inverted = inverted;
   }
 
   void update() {
     addNewValue();
     if (!_init && isActive()) { // active
-      Servo::write(CustomServo::transferFunction(getAverageOfLastValues()));
+      Servo::write(CustomServo::transferFunction(getAverageOfLastValues(), _inverted));
     }
     else { // not active 
       // go back to zero position
@@ -49,6 +50,7 @@ public:
 
 private:
   bool _init = true;
+  bool _inverted;
   unsigned _pin;
   unsigned _analogInputPin;
   
@@ -64,8 +66,12 @@ private:
   // 
   // @param x = [0;1023]
   // @return y = [0; 180]
-  static unsigned transferFunction(unsigned x) { 
-    return 6.6822581E-7 * x*x*x - .001026855 * x*x + .5263598 * x;
+  static unsigned transferFunction(unsigned x, bool inverted) { 
+    unsigned y = 6.6822581E-7 * x*x*x - .001026855 * x*x + .5263598 * x;
+    if (inverted) {
+      y = -y;
+    }
+    return y;
   };
 
   bool isActive() {
@@ -117,7 +123,7 @@ void setup() {
   // initialize servos
   // servo 1
   unsigned servo1HighPins[] = { TASTE_1 }, servo1LowPins[] = { TASTE_2 };
-  CustomServo servo1(SERVO_1_PIN, DREHGEBER_1, servo1HighPins, sizeof(servo1HighPins) / sizeof(unsigned), servo1LowPins, sizeof(servo1LowPins) / sizeof(unsigned));
+  CustomServo servo1(SERVO_1_PIN, DREHGEBER_1, servo1HighPins, sizeof(servo1HighPins) / sizeof(unsigned), servo1LowPins, sizeof(servo1LowPins) / sizeof(unsigned), true);
 
   // servo 2
   unsigned servo2HighPins[] = { TASTE_1 }, servo2LowPins[] = { TASTE_2 };
@@ -133,11 +139,11 @@ void setup() {
 
   // servo 5
   unsigned servo5HighPins[] = { TASTE_1, TASTE_2 }, servo5LowPins[] = {};
-  CustomServo servo5(SERVO_5_PIN, DREHGEBER_2, servo5HighPins, sizeof(servo5HighPins) / sizeof(unsigned), servo5LowPins, sizeof(servo5LowPins));
+  CustomServo servo5(SERVO_5_PIN, DREHGEBER_2, servo5HighPins, sizeof(servo5HighPins) / sizeof(unsigned), servo5LowPins, sizeof(servo5LowPins) / sizeof(unsigned));
 
   // servo 6
   unsigned servo6HighPins[] = { TASTE_1, TASTE_2 }, servo6LowPins[] = {};
-  CustomServo servo6(SERVO_6_PIN, DREHGEBER_3, servo6HighPins, sizeof(servo6HighPins) / sizeof(unsigned), servo6LowPins, sizeof(servo6LowPins));
+  CustomServo servo6(SERVO_6_PIN, DREHGEBER_3, servo6HighPins, sizeof(servo6HighPins) / sizeof(unsigned), servo6LowPins, sizeof(servo6LowPins) / sizeof(unsigned));
 
   CustomServo servos[NUM_SERVOS] = { servo1, servo2, servo3, servo4, servo5, servo6 };
 
