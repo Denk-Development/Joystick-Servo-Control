@@ -34,8 +34,6 @@ public:
     _lowPins = lowPins;
     _numLowPins = numLowPins;
     _analogInputPin = analogInputPin;
-
-    Serial.println(numLowPins);
   }
 
   void update() {
@@ -116,13 +114,7 @@ void softwareReset() {
 
 
 void setup() {
-  // serial connection for debugging
-  Serial.begin(9600);
-  Serial.println("running...");
-
-  
   // initialize servos
-
   // servo 1
   unsigned servo1HighPins[] = { TASTE_1 }, servo1LowPins[] = { TASTE_2 };
   CustomServo servo1(SERVO_1_PIN, DREHGEBER_1, servo1HighPins, sizeof(servo1HighPins) / sizeof(unsigned), servo1LowPins, sizeof(servo1LowPins) / sizeof(unsigned));
@@ -153,7 +145,7 @@ void setup() {
     for (unsigned i = 0; i < NUM_SERVOS; i++) {
       servos[i].update();
     }
-    Serial.println(digitalRead(TASTE_1) && !digitalRead(TASTE_2));
+    
     if (digitalRead(TASTE_4) && digitalRead(TASTE_7)) {
       softwareReset();
     }
