@@ -7,7 +7,7 @@
 #define DREHGEBER_2 A1
 #define DREHGEBER_3 A2
 
-#define SERVO_1_PIN 3
+#define SERVO_1_PIN 12
 #define SERVO_2_PIN 5
 #define SERVO_3_PIN 6
 #define SERVO_4_PIN 9
@@ -46,11 +46,13 @@ private:
   unsigned _numActivePins;
   unsigned _lastValues[AVERAGE_SAMPLES_NUM];
   unsigned _lastValuesPtr = 0;
-  
+
+  // converts the analog value into the servo rotation
+  // 
   // @param x = [0;1023]
   // @return y = [0; 180]
   static unsigned transferFunction(unsigned x) { 
-    return map(x, 0, 1023, 0, 180);
+    return 6.6822581E-7 * x*x*x - .001026855 * x*x + .5263598 * x;
   };
 
   bool isActive() {
@@ -119,8 +121,6 @@ void setup() {
 
   while (true) {
     for (unsigned i = 0; i < NUM_SERVOS; i++) {
-      Serial.println(analogRead(SERVO_1_PIN));
-      Serial.println(digitalRead(TASTE_1));
       servos[i].update();
     }
   }
