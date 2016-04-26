@@ -1,6 +1,4 @@
-#include <VirtualWire.h>
-
-#define BPS 8000 // transmission rate (bits per second)
+#include <VirtualWire.h> // wireless module library
 
 #define TASTE_1 2
 #define TASTE_2 4
@@ -12,16 +10,24 @@
 #define DREHGEBER_2 A1
 #define DREHGEBER_3 A2
 
-#define NUM_SERVOS 6
+#define NUM_SERVOS 6 // number of servos
+
+#define AVERAGE_SAMPLES_NUM 10
+
+
+// transmission
 
 #define SENDER_ID 0x5A14 // secret id (2 byte)
 
-// transmission
+#define BPS 8000 // transmission rate (bits per second)
+
 #define MESSAGE_HEADER 2 // packet header size in bytes
 #define MESSAGE_LENGTH (NUM_SERVOS + MESSAGE_HEADER) // packet size in bytes
-#define MILLIS_IDLE_BETWEEN_TRANSMISSION 9 // recommended approx. MESSAGE_LENGTH * 8 / BPS * 1,000 * 3
 
-#define AVERAGE_SAMPLES_NUM 10
+#define MILLIS_IDLE_BETWEEN_TRANSMISSION 24 // recommended approx. MESSAGE_LENGTH * 8 / BPS * 1,000 * 3
+
+
+/** Virutal Servo **/
 
 class VirtualServo
 {
@@ -117,7 +123,7 @@ private:
 };
 
 
-uint8_t outputBuffer[MESSAGE_LENGTH]; // output buffer
+uint8_t outputBuffer[MESSAGE_LENGTH]; // output buffer for transmitted data
 
 
 void softwareReset() {
@@ -172,15 +178,20 @@ void setup() {
 
   VirtualServo servos[NUM_SERVOS] = { servo1, servo2, servo3, servo4, servo5, servo6 };
 
+
+  // inifinite loop
   while (true) {
+    // update each servo (read analog pins, etc.)
     for (unsigned i = 0; i < NUM_SERVOS; i++) {
       servos[i].update();
     }
-    
+
+    // check for reset combination
     if (digitalRead(TASTE_4) && digitalRead(TASTE_7)) {
       softwareReset();
     }
 
+    // transmit servo states
     broadcastServoStates(servos);
   }
 }
