@@ -1,4 +1,6 @@
-#include <Servo.h>
+#include <VirtualWire.h>
+
+#define BPS 8000 // transmission rate (bits per second)
 
 #define TASTE_1 2
 #define TASTE_2 4
@@ -10,45 +12,46 @@
 #define DREHGEBER_2 A1
 #define DREHGEBER_3 A2
 
-#define SERVO_1_PIN 3
-#define SERVO_2_PIN 5
-#define SERVO_3_PIN 6
-#define SERVO_4_PIN 9
-#define SERVO_5_PIN 10
-#define SERVO_6_PIN 11
-
 #define NUM_SERVOS 6
+
+#define SENDER_ID 0x5A14 // secret id (2 byte)
+
+// transmission
+#define MESSAGE_HEADER 2 // packet header size in bytes
+#define MESSAGE_LENGTH (NUM_SERVOS + MESSAGE_HEADER) // packet size in bytes
+#define MILLIS_IDLE_BETWEEN_TRANSMISSION 9 // recommended approx. MESSAGE_LENGTH * 8 / BPS * 1,000 * 3
 
 #define AVERAGE_SAMPLES_NUM 10
 
-class CustomServo : public Servo
+class VirtualServo
 {
 public:
-  CustomServo(unsigned pin, unsigned analogInputPin, unsigned* highPins, unsigned numHighPins, unsigned* lowPins, unsigned numLowPins, bool inverted = false) : Servo() {
-    Servo::attach(pin);
-    pinMode(pin, OUTPUT);
+  VirtualServo(unsigned analogInputPin, unsigned* highPins, unsigned numHighPins, unsigned* lowPins, unsigned numLowPins, bool inverted = false) {
     pinMode(analogInputPin, INPUT);
-    _pin = pin;
     _highPins = highPins;
     _numHighPins = numHighPins;
     _lowPins = lowPins;
     _numLowPins = numLowPins;
     _analogInputPin = analogInputPin;
-    _inverted = inverted;
   }
 
   void update() {
     addNewValue();
     if (!_init && isActive()) { // active
-      Servo::write(CustomServo::transferFunction(getAverageOfLastValues(), _inverted));
+      _state = VirtualServo::transferFunction(getAverageOfLastValues(), _inverted);
     }
     else { // not active 
       // go back to zero position
-      Servo::write(90);
+      _state = 90;
     }
   };
 
+  uint8_t read() {
+    return _state;
+  }
+
 private:
+  uint8_t _state = 90;
   bool _init = true;
   bool _inverted;
   unsigned _pin;
@@ -114,38 +117,60 @@ private:
 };
 
 
+uint8_t outputBuffer[MESSAGE_LENGTH]; // output buffer
+
+
 void softwareReset() {
   asm volatile ("jmp 0"); // reset software
 }
 
+void broadcastServoStates(VirtualServo servos[]) {
+  // fill output buffer with data
+  outputBuffer[0] = (uint8_t)(SENDER_ID >> 8); // transmitter secret high byte
+  outputBuffer[1] = (uint8_t)(SENDER_ID & 255); // transmitter secret low byte
+  for (unsigned i = 0; i < NUM_SERVOS; i++) {
+    outputBuffer[i + MESSAGE_HEADER] = (uint8_t)servos[i].read();
+  }
+  
+  // transmitt data
+  vw_send(outputBuffer, MESSAGE_LENGTH);
+  vw_wait_tx(); // wait until the whole message is gone
+  delay(MILLIS_IDLE_BETWEEN_TRANSMISSION); // wait some more time
+}
+
 
 void setup() {
+  // initialize transmitter
+  vw_set_tx_pin(12); // transmitter module data pin
+  vw_setup(BPS); // transmission rate
+
+  
   // initialize servos
   // servo 1
   unsigned servo1HighPins[] = { TASTE_1 }, servo1LowPins[] = { TASTE_2 };
-  CustomServo servo1(SERVO_1_PIN, DREHGEBER_1, servo1HighPins, sizeof(servo1HighPins) / sizeof(unsigned), servo1LowPins, sizeof(servo1LowPins) / sizeof(unsigned), true);
+  VirtualServo servo1(DREHGEBER_1, servo1HighPins, sizeof(servo1HighPins) / sizeof(unsigned), servo1LowPins, sizeof(servo1LowPins) / sizeof(unsigned), true);
 
   // servo 2
   unsigned servo2HighPins[] = { TASTE_1 }, servo2LowPins[] = { TASTE_2 };
-  CustomServo servo2(SERVO_2_PIN, DREHGEBER_2, servo2HighPins, sizeof(servo2HighPins) / sizeof(unsigned), servo2LowPins, sizeof(servo2LowPins) / sizeof(unsigned));
+  VirtualServo servo2(DREHGEBER_2, servo2HighPins, sizeof(servo2HighPins) / sizeof(unsigned), servo2LowPins, sizeof(servo2LowPins) / sizeof(unsigned));
 
   // servo 3
   unsigned servo3HighPins[] = { TASTE_1 }, servo3LowPins[] = { TASTE_2 };
-  CustomServo servo3(SERVO_3_PIN, DREHGEBER_3, servo3HighPins, sizeof(servo3HighPins) / sizeof(unsigned), servo3LowPins, sizeof(servo3LowPins) / sizeof(unsigned));
+  VirtualServo servo3(DREHGEBER_3, servo3HighPins, sizeof(servo3HighPins) / sizeof(unsigned), servo3LowPins, sizeof(servo3LowPins) / sizeof(unsigned));
 
   // servo 4
   unsigned servo4HighPins[] = { TASTE_1, TASTE_2 }, servo4LowPins[] = {};
-  CustomServo servo4(SERVO_4_PIN, DREHGEBER_1, servo4HighPins, sizeof(servo4HighPins) / sizeof(unsigned), servo4LowPins, sizeof(servo4LowPins) / sizeof(unsigned));
+  VirtualServo servo4(DREHGEBER_1, servo4HighPins, sizeof(servo4HighPins) / sizeof(unsigned), servo4LowPins, sizeof(servo4LowPins) / sizeof(unsigned));
 
   // servo 5
   unsigned servo5HighPins[] = { TASTE_1, TASTE_2 }, servo5LowPins[] = {};
-  CustomServo servo5(SERVO_5_PIN, DREHGEBER_2, servo5HighPins, sizeof(servo5HighPins) / sizeof(unsigned), servo5LowPins, sizeof(servo5LowPins) / sizeof(unsigned));
+  VirtualServo servo5(DREHGEBER_2, servo5HighPins, sizeof(servo5HighPins) / sizeof(unsigned), servo5LowPins, sizeof(servo5LowPins) / sizeof(unsigned));
 
   // servo 6
   unsigned servo6HighPins[] = { TASTE_1, TASTE_2 }, servo6LowPins[] = {};
-  CustomServo servo6(SERVO_6_PIN, DREHGEBER_3, servo6HighPins, sizeof(servo6HighPins) / sizeof(unsigned), servo6LowPins, sizeof(servo6LowPins) / sizeof(unsigned));
+  VirtualServo servo6(DREHGEBER_3, servo6HighPins, sizeof(servo6HighPins) / sizeof(unsigned), servo6LowPins, sizeof(servo6LowPins) / sizeof(unsigned));
 
-  CustomServo servos[NUM_SERVOS] = { servo1, servo2, servo3, servo4, servo5, servo6 };
+  VirtualServo servos[NUM_SERVOS] = { servo1, servo2, servo3, servo4, servo5, servo6 };
 
   while (true) {
     for (unsigned i = 0; i < NUM_SERVOS; i++) {
@@ -155,6 +180,8 @@ void setup() {
     if (digitalRead(TASTE_4) && digitalRead(TASTE_7)) {
       softwareReset();
     }
+
+    broadcastServoStates(servos);
   }
 }
 
