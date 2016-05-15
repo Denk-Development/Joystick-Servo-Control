@@ -21,6 +21,12 @@
 
 #define AVERAGE_SAMPLES_NUM 10
 
+#define TASTE_1_HIGH_OUTPUT_DELAY 1000 // 1 second
+#define TASTE_1_HIGH_OUTPUT_PIN 13
+
+unsigned long millisLastTaste1 = 0;
+bool taste1PushedPreviously = false;
+
 class CustomServo : public Servo
 {
 public:
@@ -120,6 +126,8 @@ void softwareReset() {
 
 
 void setup() {
+  pinMode(TASTE_1_HIGH_OUTPUT_PIN, OUTPUT);
+  
   // initialize servos
   // servo 1
   unsigned servo1HighPins[] = { TASTE_1 }, servo1LowPins[] = { TASTE_2 };
@@ -155,6 +163,13 @@ void setup() {
     if (digitalRead(TASTE_4) && digitalRead(TASTE_7)) {
       softwareReset();
     }
+
+    
+    if (digitalRead(TASTE_1)) {
+      taste1PushedPreviously = true;
+      millisLastTaste1 = millis();
+    }
+    digitalWrite(TASTE_1_HIGH_OUTPUT_PIN, (taste1PushedPreviously && millisLastTaste1 + TASTE_1_HIGH_OUTPUT_DELAY >= millis()) ? HIGH : LOW);
   }
 }
 
