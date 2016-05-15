@@ -16,7 +16,6 @@
 
 
 // transmission
-
 #define SENDER_ID 0x5A14 // secret id (2 byte)
 
 #define BPS 8000 // transmission rate (bits per second)
@@ -137,6 +136,13 @@ void broadcastServoStates(VirtualServo servos[]) {
   for (unsigned i = 0; i < NUM_SERVOS; i++) {
     outputBuffer[i + MESSAGE_HEADER] = (uint8_t)servos[i].read();
   }
+     
+  // read packet content
+  for (int i = 0; i < NUM_SERVOS; i++) {
+    Serial.print(outputBuffer[MESSAGE_HEADER + i]);
+  }
+  
+  Serial.println();
   
   // transmitt data
   vw_send(outputBuffer, MESSAGE_LENGTH);
@@ -146,6 +152,8 @@ void broadcastServoStates(VirtualServo servos[]) {
 
 
 void setup() {
+  Serial.begin(9600);
+  
   // initialize transmitter
   vw_set_tx_pin(12); // transmitter module data pin
   vw_setup(BPS); // transmission rate
