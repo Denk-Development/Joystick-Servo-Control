@@ -26,6 +26,12 @@
 #define MILLIS_IDLE_BETWEEN_TRANSMISSION 24 // recommended approx. MESSAGE_LENGTH * 8 / BPS * 1,000 * 3
 
 
+#define TASTE_1_HIGH_OUTPUT_DELAY 1000 // 1 second
+#define TASTE_1_HIGH_OUTPUT_PIN 13
+
+unsigned long millisLastTaste1 = 0;
+bool taste1PushedPreviously = false;
+
 /** Virutal Servo **/
 
 class VirtualServo
@@ -152,6 +158,8 @@ void broadcastServoStates(VirtualServo servos[]) {
 
 
 void setup() {
+  pinMode(TASTE_1_HIGH_OUTPUT_PIN, OUTPUT);
+  
   Serial.begin(9600);
   
   // initialize transmitter
@@ -201,6 +209,13 @@ void setup() {
 
     // transmit servo states
     broadcastServoStates(servos);
+
+    
+    if (digitalRead(TASTE_1)) {
+      taste1PushedPreviously = true;
+      millisLastTaste1 = millis();
+    }
+    digitalWrite(TASTE_1_HIGH_OUTPUT_PIN, (taste1PushedPreviously && millisLastTaste1 + TASTE_1_HIGH_OUTPUT_DELAY >= millis()) ? HIGH : LOW);
   }
 }
 
