@@ -1,32 +1,43 @@
 #include <SoftwareSerial.h>
+#include <Servo.h>
 
 #define RX_PIN 10
 #define TX_PIN 11
 
 #define NUM_SERVOS 6 // number of servos (total - not only this Arduino)
 
+
 SoftwareSerial dataLink(RX_PIN, TX_PIN);
 
 uint8_t inputBuffer[NUM_SERVOS]; // full data packet
 
+// servos attached to this arduino
+#define SERVO_1_PIN 9
+
+Servo servo1;
+
 void setup() {
   dataLink.begin(57600);
   Serial.begin(57600);
+
+  servo1.attach(SERVO_1_PIN);
 }
 
 void loop() {
   while (dataLink.available() >= NUM_SERVOS + 1) {
-    if (dataLink.read() == '\n') {
+    if (dataLink.read() == 0xFF) { // 0xFF marks the end of a packet because it's no valid servo state
       for (int i = 0; i < NUM_SERVOS; i++) {
         inputBuffer[i] = dataLink.read();
-            
-        // read packet content
-        for (int i = 0; i < NUM_SERVOS; i++) {
-          Serial.print(inputBuffer[i]);
+        uint8_t servoAngle = inputBuffer[i];
+        //Serial.print(servoAngle);
+
+        switch(i) {
+          case 0:
+            servo1.write(servoAngle);
+            break;
         }
-        
-        Serial.write('\n');
       }
+      //Serial.write('\n');
     }
   }
 }

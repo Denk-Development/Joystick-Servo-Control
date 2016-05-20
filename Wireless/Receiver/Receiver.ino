@@ -65,7 +65,7 @@ void loop() {
           }
 
           //Serial.println();
-          dataLink.write('\n');
+          dataLink.write(0xFF); // 0xFF marks the end of a packet because it's no valid servo state
         }
 
         flushInputBuffer(); // clear input buffer
