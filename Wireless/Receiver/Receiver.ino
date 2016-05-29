@@ -4,6 +4,7 @@
 // software serial
 #define SS_RX_PIN 10
 #define SS_TX_PIN 11
+#define DATA_LINK_ENABLE_PIN 9 // high active
 
 #define BPS 8000 // transmission rate (bits per second)
 
@@ -28,6 +29,7 @@ unsigned long lastDataReceived = 0; // time (millis) of last data reception
 byte bytesReceived = 0; // number of bytes of current packet already received
 
 void setup() {
+  pinMode(DATA_LINK_ENABLE_PIN, INPUT);
   //Serial.begin(9600);
   dataLink.begin(57600);
 
@@ -55,7 +57,7 @@ void loop() {
       // check whether a full packet has been received already
       if (bytesReceived == MESSAGE_LENGTH) {
         // read sender information (first two byte)
-        if (inputBuffer[0] == (uint8_t)(SENDER_ID >> 8) && inputBuffer[1] == (uint8_t)(SENDER_ID & 255)) {
+        if (digitalRead(DATA_LINK_ENABLE_PIN), inputBuffer[0] == (uint8_t)(SENDER_ID >> 8) && inputBuffer[1] == (uint8_t)(SENDER_ID & 255)) {
           // packet is for this receiver
           
           // read packet content
