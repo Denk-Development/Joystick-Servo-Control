@@ -31,6 +31,5 @@
 |9|Servo 1 pin|-|
 |10|Software serial RX|11|
 |11|Software serial TX|10|
+|13|Data link enable pin|9|
 |GND|Ground|GND|
-
-
