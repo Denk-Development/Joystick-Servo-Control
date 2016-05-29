@@ -4,11 +4,13 @@
 #define TASTE_2 4
 #define TASTE_3 7
 #define TASTE_4 8
-#define TASTE_7 12
+#define TASTE_7 13
 
 #define DREHGEBER_1 A0
 #define DREHGEBER_2 A1
 #define DREHGEBER_3 A2
+
+#define TRANSMITTER_MODULE_DATA_PIN 12
 
 #define NUM_SERVOS 6 // number of servos
 
@@ -163,7 +165,7 @@ void setup() {
   Serial.begin(9600);
   
   // initialize transmitter
-  vw_set_tx_pin(12); // transmitter module data pin
+  vw_set_tx_pin(TRANSMITTER_MODULE_DATA_PIN); // transmitter module data pin
   vw_setup(BPS); // transmission rate
 
   
