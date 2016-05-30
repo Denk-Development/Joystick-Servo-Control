@@ -25,7 +25,7 @@
 #define MESSAGE_HEADER 2 // packet header size in bytes
 #define MESSAGE_LENGTH (NUM_SERVOS + MESSAGE_HEADER) // packet size in bytes
 
-#define MILLIS_IDLE_BETWEEN_TRANSMISSION 24 // recommended approx. MESSAGE_LENGTH * 8 / BPS * 1,000 * 3
+#define MILLIS_IDLE_BETWEEN_TRANSMISSION 80 // recommended approx. MESSAGE_LENGTH * 8 / BPS * 1,000 * 3
 
 
 #define TASTE_1_HIGH_OUTPUT_DELAY 1000 // 1 second

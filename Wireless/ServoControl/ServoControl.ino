@@ -1,49 +1,73 @@
-#include <SoftwareSerial.h>
 #include <Servo.h>
-
-#define RX_PIN 10
-#define TX_PIN 11
-#define DATA_LINK_ENABLE_PIN 13 // high active
-
-#define NUM_SERVOS 6 // number of servos (total - not only this Arduino)
-
-
-SoftwareSerial dataLink(RX_PIN, TX_PIN);
-
-uint8_t inputBuffer[NUM_SERVOS]; // full data packet
 
 // servos attached to this arduino
 #define SERVO_1_PIN 9
 
+#define REQUEST_NEXT_PIN 2
+
 Servo servo1;
 
 void setup() {
-  pinMode(DATA_LINK_ENABLE_PIN, OUTPUT);
-  dataLink.begin(57600);
   Serial.begin(57600);
 
   servo1.attach(SERVO_1_PIN);
+
+  // parallel input data (8 bit)
+  pinMode(A0, INPUT); // LSB
+  pinMode(A1, INPUT);
+  pinMode(A2, INPUT);
+  pinMode(A3, INPUT);
+  pinMode(A4, INPUT);
+  pinMode(A5, INPUT);
+  pinMode(3, INPUT);
+  pinMode(4, INPUT); // MSB  
+
+  // parallel input address (3 bit)
+  pinMode(5, INPUT); // LSB
+  pinMode(6, INPUT);
+  pinMode(7, INPUT); // MSB
+
+  pinMode(REQUEST_NEXT_PIN, OUTPUT);
+  digitalWrite(REQUEST_NEXT_PIN, HIGH);
 }
 
 void loop() {
-  digitalWrite(DATA_LINK_ENABLE_PIN, HIGH);
-  
-  while (dataLink.available() >= NUM_SERVOS + 1) {
-    if (dataLink.read() == 0xFF) { // 0xFF marks the end of a packet because it's no valid servo state
-      digitalWrite(DATA_LINK_ENABLE_PIN, LOW);
-      for (int i = 0; i < NUM_SERVOS; i++) {
-        inputBuffer[i] = dataLink.read();
-        uint8_t servoAngle = inputBuffer[i];
-
-        switch(i) {
-          case 0:
-            Serial.print(servoAngle);
-            servo1.write(servoAngle);
-            break;
-        }
-      }
-      delay(100);
-      Serial.write('\n');
-    }
+  uint8_t angle = requestNext();
+  //Serial.println(angle);
+  switch(readIndex()) {
+    case 0:
+      servo1.write(angle);
+      Serial.println(angle);
+      break;
   }
+  //Serial.println(readIndex());
 }
+
+uint8_t requestNext() {
+  digitalWrite(REQUEST_NEXT_PIN, LOW);
+  digitalWrite(REQUEST_NEXT_PIN, HIGH);
+  delay(100); // give time for parallel output
+  return readAngle();
+}
+
+uint8_t readAngle() {
+  uint8_t angle = 0;
+  angle |= digitalRead(A0);
+  angle |= digitalRead(A1) << 1;
+  angle |= digitalRead(A2) << 2;
+  angle |= digitalRead(A3) << 3;
+  angle |= digitalRead(A4) << 4;
+  angle |= digitalRead(A5) << 5;
+  angle |= digitalRead(3) << 6;
+  angle |= digitalRead(4) << 7;
+  return angle;
+}
+
+uint8_t readIndex() {
+  uint8_t index = 0;
+  index |= digitalRead(5);
+  index |= digitalRead(6) << 1;
+  index |= digitalRead(7) << 2;
+  return index;
+}
+
