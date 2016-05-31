@@ -2,6 +2,8 @@
 
 ## Transmitter Arduino
 
+It's necessary to put all pins to ground which are defined but not used. E.g. if "Taste 7" isn't connected to the joystick it needs to be grounded.
+
 | Pin | Description |
 |---|---|
 |2|Taste 1|
@@ -18,10 +20,10 @@
 
 | Pin | Description | Servo Control Arduino (pin) |
 |---|---|---|
-|12|Receiver module data pin|-|
-|9|Data link enable pin|13|
+|~~9~~|~~Data link enable pin~~|~~13~~|
 |10|Software serial RX|11|
 |11|Software serial TX|10|
+|12|Receiver module data pin|-|
 |GND|Ground|GND|
 
 ## Servo Control Arduino
@@ -31,5 +33,5 @@
 |9|Servo 1 pin|-|
 |10|Software serial RX|11|
 |11|Software serial TX|10|
-|13|Data link enable pin|9|
+|~~13~~|~~Data link enable pin~~|~~9~~|
 |GND|Ground|GND|
