@@ -1,7 +1,5 @@
 #include <VirtualWire.h> // wireless module library
 
-#define DEBUG
-
 #define TASTE_1 2
 #define TASTE_2 4
 #define TASTE_3 7
@@ -27,7 +25,7 @@
 #define MESSAGE_HEADER 2 // packet header size in bytes
 #define MESSAGE_LENGTH (NUM_SERVOS + MESSAGE_HEADER) // packet size in bytes
 
-#define MILLIS_IDLE_BETWEEN_TRANSMISSION 80 // recommended approx. MESSAGE_LENGTH * 8 / BPS * 1,000 * 3
+#define MILLIS_IDLE_BETWEEN_TRANSMISSION 24 // recommended approx. MESSAGE_LENGTH * 8 / BPS * 1,000 * 3
 
 
 #define TASTE_1_HIGH_OUTPUT_DELAY 1000 // 1 second
@@ -145,14 +143,14 @@ void broadcastServoStates(VirtualServo servos[]) {
   outputBuffer[1] = (uint8_t)(SENDER_ID & 255); // transmitter secret low byte
   for (unsigned i = 0; i < NUM_SERVOS; i++) {
     outputBuffer[i + MESSAGE_HEADER] = (uint8_t)servos[i].read();
-    #ifdef DEBUG
-      Serial.print(outputBuffer[MESSAGE_HEADER + i]);
-    #endif
+  }
+     
+  // read packet content
+  for (int i = 0; i < NUM_SERVOS; i++) {
+    Serial.print(outputBuffer[MESSAGE_HEADER + i]);
   }
   
-  #ifdef DEBUG
-    Serial.println();
-  #endif
+  Serial.println();
   
   // transmitt data
   vw_send(outputBuffer, MESSAGE_LENGTH);
@@ -162,16 +160,9 @@ void broadcastServoStates(VirtualServo servos[]) {
 
 
 void setup() {
-  pinMode(TASTE_1, INPUT);
-  pinMode(TASTE_2, INPUT);
-  pinMode(TASTE_3, INPUT);
-  pinMode(TASTE_4, INPUT);
-  pinMode(TASTE_7, INPUT);
   pinMode(TASTE_1_HIGH_OUTPUT_PIN, OUTPUT);
   
-  #ifdef DEBUG
-    Serial.begin(9600);
-  #endif
+  Serial.begin(9600);
   
   // initialize transmitter
   vw_set_tx_pin(TRANSMITTER_MODULE_DATA_PIN); // transmitter module data pin
@@ -208,10 +199,6 @@ void setup() {
 
   // inifinite loop
   while (true) {
-    #ifdef DEBUG
-      Serial.println(digitalRead(TASTE_1));
-    #endif
-    
     // update each servo (read analog pins, etc.)
     for (unsigned i = 0; i < NUM_SERVOS; i++) {
       servos[i].update();
