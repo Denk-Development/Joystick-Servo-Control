@@ -1,6 +1,8 @@
 #include <VirtualWire.h>
 #include <SoftwareSerial.h>
 
+#define DEBUG
+
 // software serial
 #define SS_RX_PIN 10
 #define SS_TX_PIN 11
@@ -30,8 +32,10 @@ byte bytesReceived = 0; // number of bytes of current packet already received
 
 void setup() {
   pinMode(DATA_LINK_ENABLE_PIN, INPUT);
-  Serial.begin(9600);
-  dataLink.begin(57600);
+  #ifdef DEBUG
+    Serial.begin(9600);
+  #endif
+  dataLink.begin(38400);
 
   vw_set_rx_pin(RX_PIN); // pin
   vw_setup(BPS); // transmission rate
@@ -62,11 +66,15 @@ void loop() {
           
           // read packet content
           for (int i = 0; i < NUM_SERVOS; i++) {
-            Serial.print(inputBuffer[MESSAGE_HEADER + i]);
+            #ifdef DEBUG
+              Serial.print(inputBuffer[MESSAGE_HEADER + i]);
+            #endif
             dataLink.write(inputBuffer[MESSAGE_HEADER + i]);
           }
 
-          Serial.println();
+          #ifdef DEBUG
+            Serial.println();
+          #endif
           dataLink.write(0xFF); // 0xFF marks the end of a packet because it's no valid servo state
         }
 

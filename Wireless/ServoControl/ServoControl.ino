@@ -1,9 +1,10 @@
 #include <SoftwareSerial.h>
 #include <Servo.h>
 
+#define DEBUG
+
 #define RX_PIN 10
 #define TX_PIN 11
-#define DATA_LINK_ENABLE_PIN 13 // high active
 
 #define NUM_SERVOS 6 // number of servos (total - not only this Arduino)
 
@@ -20,11 +21,10 @@ int inputPtr = 0;
 Servo servo1;
 
 void setup() {
-  pinMode(DATA_LINK_ENABLE_PIN, OUTPUT);
-  digitalWrite(DATA_LINK_ENABLE_PIN, HIGH);
-  
-  dataLink.begin(57600);
-  Serial.begin(57600);
+  dataLink.begin(38400); // 57600 seems to be a little bit too fast
+  #ifdef DEBUG
+    Serial.begin(57600);
+  #endif
 
   servo1.attach(SERVO_1_PIN);
 }
@@ -37,11 +37,15 @@ void loop() {
     uint8_t lastChar = dataLink.read();
     inputBuffer[inputPtr++] = lastChar;
     if (lastChar == 0xFF) { // 0xFF marks the end of a packet because it's no valid servo state
-      Serial.println(inputPtr);
+      #ifdef DEBUG
+        Serial.println(inputPtr);
+      #endif
       if (inputPtr == NUM_SERVOS + 1) {
         for (int i = 0; i < NUM_SERVOS; i++) {
           uint8_t servoAngle = (uint8_t)inputBuffer[i];
-          Serial.print(servoAngle);
+          #ifdef DEBUG
+            Serial.print(servoAngle);
+          #endif
   
           switch(i) {
             case 0:
@@ -50,7 +54,9 @@ void loop() {
           }
         }
       }
-      Serial.write('\n');
+      #ifdef DEBUG
+        Serial.write('\n');
+      #endif
       inputPtr = 0;
     }
   }
