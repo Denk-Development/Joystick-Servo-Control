@@ -1,5 +1,7 @@
 #include <VirtualWire.h>
 
+#define DEBUG
+
 // software serial
 #define BPS 8000 // transmission rate (bits per second)
 
@@ -43,8 +45,10 @@ void setup() {
   pinMode(5, OUTPUT); // LSB
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT); // MSB
-  
-  Serial.begin(9600);
+
+  #ifdef DEBUG
+    Serial.begin(9600);
+  #endif
   
   pinMode(REQUEST_NEXT_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(REQUEST_NEXT_PIN), nextServo, FALLING);
@@ -80,10 +84,14 @@ void loop() {
           // read packet content
           for (int i = 0; i < NUM_SERVOS; i++) {
             servoAngles[i] = inputBuffer[MESSAGE_HEADER + i];
+
+            #ifdef DEBUG
+              Serial.print(inputBuffer[MESSAGE_HEADER + i]);
+            #endif
           }
-          //Serial.println(inputBuffer[MESSAGE_HEADER + 0]);
-          Serial.println("received");
-          //Serial.println();
+          #ifdef DEBUG
+            Serial.println();
+          #endif
         }
 
         flushInputBuffer(); // clear input buffer
@@ -94,7 +102,9 @@ void loop() {
   if (bytesReceived && lastDataReceived + MILLIS_IDLE_BETWEEN_TRANSMISSION / 2 < millis()) {
     // a broken packet has been received 
     flushInputBuffer();
-    Serial.println("flushed");
+    #ifdef DEBUG
+      Serial.println("flushed");
+    #endif
   }
 }
 
@@ -107,7 +117,9 @@ void flushInputBuffer() {
 
 
 void nextServo() {
-  Serial.println("sent");
+  #ifdef DEBUG
+    Serial.println("sent");
+  #endif
   if (++shownServo >= NUM_LOCAL_SERVOS) {
     shownServo = 0;
   }

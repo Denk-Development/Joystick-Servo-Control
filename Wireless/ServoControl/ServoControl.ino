@@ -1,5 +1,7 @@
 #include <Servo.h>
 
+#define DEBUG
+
 // servos attached to this arduino
 #define SERVO_1_PIN 9
 
@@ -8,7 +10,9 @@
 Servo servo1;
 
 void setup() {
-  Serial.begin(57600);
+  #ifdef DEBUG
+    Serial.begin(57600);
+  #endif
 
   servo1.attach(SERVO_1_PIN);
 
@@ -37,10 +41,14 @@ void loop() {
   switch(readIndex()) {
     case 0:
       servo1.write(angle);
-      Serial.println(angle);
+      #ifdef DEBUG
+        Serial.println(angle);
+      #endif
       break;
   }
-  //Serial.println(readIndex());
+  #ifdef DEBUG
+    Serial.println(readIndex());
+  #endif
 }
 
 uint8_t requestNext() {
